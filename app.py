@@ -112,7 +112,8 @@ st.write('---')
 # predict the future values (Forecasting)
 st.write("<p style='color:green; font-size: 50px; font-weight: bold;'>Forecasting the data</p>", unsafe_allow_html=True)
 
-forecast_period = st.number_input('## Enter forecast period in days', 1, 365, 10)
+forecast_period = st.number_input('## Enter forecast period in days', 1, 365, 100)
+
 # predict the future values
 predictions = model.get_prediction(start=len(data), end=len(data)+forecast_period)
 predictions = predictions.predicted_mean
@@ -157,6 +158,78 @@ if st.button('Hide Separate Plots'):
         hide_plots = True
     else:
         hide_plots = False
+
+# TO CHECK ACCURACY
+
+# 1. Define accuracy check period
+try:
+    # Calculate cutoff date (make sure we have enough data)
+    accuracy_check_date = end_date - timedelta(days=forecast_period)
+
+    # Convert to pandas datetime for comparison
+    accuracy_check_date = pd.to_datetime(accuracy_check_date)
+    last_available_date = pd.to_datetime(data['Date'].iloc[-1])
+
+    if accuracy_check_date >= last_available_date:
+        st.warning("Not enough historical data for accuracy check")
+    else:
+        # 2. Split data into train and test
+        train_data = data[data['Date'] <= accuracy_check_date]
+        test_data = data[data['Date'] > accuracy_check_date]
+
+        if not test_data.empty:
+            # 3. Train model on historical data
+            model_accuracy = sm.tsa.statespace.SARIMAX(
+                train_data[column],
+                order=(p, d, q),
+                seasonal_order=(p, d, q, seasonal_order)
+            ).fit(disp=0)
+
+            # 4. Generate predictions for test period
+            predictions = model_accuracy.get_forecast(steps=len(test_data))
+            pred_mean = predictions.predicted_mean
+
+            # Create proper date index for predictions
+            pred_dates = pd.date_range(
+                start=train_data['Date'].iloc[-1] + timedelta(days=1),
+                periods=len(test_data)
+            )
+            pred_mean.index = pred_dates
+
+            # 5. Compare with actual data
+            comparison = pd.DataFrame({
+                'Date': test_data['Date'],
+                'Actual': test_data[column],
+                'Predicted': pred_mean.values
+            })
+
+            # Calculate metrics
+            mae = np.mean(np.abs(comparison['Actual'] - comparison['Predicted']))
+            mape = np.mean(np.abs((comparison['Actual'] - comparison['Predicted']) / comparison['Actual'])) * 100
+
+            # Show results
+            st.subheader(f'Accuracy Check ({forecast_period} Days Forecast)')
+            col1, col2 = st.columns(2)
+            col1.metric("MAE", f"{mae:.2f}")
+            col2.metric("MAPE", f"{mape:.2f}%")
+
+            # Plot comparison
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=comparison['Date'], y=comparison['Actual'], name='Actual'))
+            fig.add_trace(go.Scatter(x=comparison['Date'], y=comparison['Predicted'], name='Predicted'))
+            fig.update_layout(title='Historical Accuracy Validation')
+            st.plotly_chart(fig)
+
+        else:
+            st.warning("No test data available for accuracy check")
+
+except Exception as e:
+    st.error(f"Accuracy check failed: {str(e)}")
+
+
+
+
+
 
 st.write("---")
 st.markdown("<h1 style='color: green;'>Thank you for using this app, <br>share with your friends!😄</h2>", unsafe_allow_html=True)
