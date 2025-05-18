@@ -159,6 +159,8 @@ if st.button('Hide Separate Plots'):
     else:
         hide_plots = False
 
+
+
 # TO CHECK ACCURACY
 
 # 1. Define accuracy check period
@@ -209,9 +211,10 @@ try:
 
             # Show results
             st.subheader(f'Accuracy Check ({forecast_period} Days Forecast)')
+            st.write("Lower the MAE & MAPE = Better the Accuracy")
             col1, col2 = st.columns(2)
-            col1.metric("MAE", f"{mae:.2f}")
-            col2.metric("MAPE", f"{mape:.2f}%")
+            col1.metric("MAE(Mean Absolute Error)", f"{mae:.2f}")
+            col2.metric("MAPE(Mean Absolute Percentage Error)", f"{mape:.2f}%")
 
             # Plot comparison
             fig = go.Figure()
@@ -225,6 +228,7 @@ try:
 
 except Exception as e:
     st.error(f"Accuracy check failed: {str(e)}")
+
 
 
 
