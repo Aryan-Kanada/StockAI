@@ -112,7 +112,7 @@ st.write('---')
 # predict the future values (Forecasting)
 st.write("<p style='color:green; font-size: 50px; font-weight: bold;'>Forecasting the data</p>", unsafe_allow_html=True)
 
-forecast_period = st.number_input('## Enter forecast period in days', 1, 365, 100)
+forecast_period = st.number_input('## Enter forecast period in days', 1, 600, 100)
 
 # predict the future values
 predictions = model.get_prediction(start=len(data), end=len(data)+forecast_period)
@@ -139,25 +139,15 @@ fig.update_layout(title='Actual vs Predicted', xaxis_title='Date', yaxis_title='
 st.plotly_chart(fig)
 
 # Add buttons to show and hide separate plots
-show_plots = False
-if st.button('Show Separate Plots'):
-    if not show_plots:
-        st.write(px.line(x=data["Date"], y=data[column], title='Actual', width=1200, height=400,
-                         labels={'x': 'Date', 'y': 'price'}).update_traces(line_color='Blue'))
-        st.write(
-            px.line(x=predictions["Date"], y=predictions["predicted_mean"], title='Predicted', width=1200, height=400,
-                    labels={'x': 'Date', 'y': 'price'}).update_traces(line_color='green'))
-        show_plots = True
-    else:
-        show_plots = False
 
-# add hide plots button
-hide_plots = False
-if st.button('Hide Separate Plots'):
-    if not hide_plots:
-        hide_plots = True
-    else:
-        hide_plots = False
+st.write(px.line(x=data["Date"], y=data[column], title='Actual', width=1200, height=400,
+                 labels={'x': 'Date', 'y': 'price'}).update_traces(line_color='Blue'))
+
+st.write(px.line(x=predictions["Date"], y=predictions["predicted_mean"], title='Predicted', width=1200, height=400,
+                 labels={'x': 'Date', 'y': 'price'}).update_traces(line_color='green'))
+
+
+
 
 
 
