@@ -14,7 +14,7 @@ import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
 
 # Title
-app_name = 'Stock Market Forecasting App'
+app_name = 'StockAI'
 st.title(app_name)
 st.subheader('This app is created to forecast the stock market price of the entered company.')  # Updated text
 
@@ -112,7 +112,7 @@ st.write('---')
 # predict the future values (Forecasting)
 st.write("<p style='color:green; font-size: 50px; font-weight: bold;'>Forecasting the data</p>", unsafe_allow_html=True)
 
-forecast_period = st.number_input('## Enter forecast period in days', 1, 600, 100)
+forecast_period = st.number_input('## Enter forecast period in days', 1, 1000, 150)
 
 # predict the future values
 predictions = model.get_prediction(start=len(data), end=len(data)+forecast_period)
@@ -227,6 +227,7 @@ except Exception as e:
 
 st.write("---")
 st.markdown("<h1 style='color: green;'>Thank you for using this app, <br>share with your friends!😄</h2>", unsafe_allow_html=True)
+
 st.write("---")
 st.write("### About the author:")
 
